@@ -6,6 +6,7 @@ import 'dart:io';
 import 'package:budgetcontrol/components/chart.dart';
 import 'package:budgetcontrol/components/transaction_form.dart';
 import 'package:budgetcontrol/components/transaction_list.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'models/transaction.dart';
 
@@ -83,65 +84,95 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final iconList = Platform.isIOS ? CupertinoIcons.list_bullet : Icons.list;
+    final iconChart =
+        Platform.isIOS ? CupertinoIcons.chart_bar_alt_fill : Icons.bar_chart;
     bool isLandscape =
         MediaQuery.of(context).orientation == Orientation.landscape;
 
-    final appbar = AppBar(
-      actions: [
-        IconButton(
-          onPressed: () => _openTransactionFormModal(context),
-          icon: Icon(Icons.add),
-        ),
-        if (isLandscape)
-          IconButton(
-              onPressed: () {
-                setState(() {
-                  _showChart = !_showChart;
-                });
-              },
-              icon: Icon(_showChart ? Icons.list : Icons.show_chart))
-      ],
-      title: Text(
-        'Despesas Pessoais',
-        style: TextStyle(fontSize: 20 * MediaQuery.of(context).textScaleFactor),
+    Widget _geticonButton(IconData icon, void Function() fn) {
+      return Platform.isIOS
+          ? GestureDetector(onTap: fn, child: Icon(icon))
+          : IconButton(onPressed: fn, icon: Icon(icon));
+    }
+
+    final actions = <Widget>[
+      _geticonButton(
+        Platform.isIOS ? CupertinoIcons.add : Icons.add,
+        () => _openTransactionFormModal(context),
       ),
-    );
+      if (isLandscape)
+        _geticonButton(
+          _showChart ? iconList : iconChart,
+          () {
+            setState(() {
+              _showChart = !_showChart;
+            });
+          },
+        ),
+    ];
+
+    final PreferredSizeWidget appbar = Platform.isIOS
+        ? CupertinoNavigationBar(
+            middle: Text('Despesas Pessoais'),
+            trailing: Row(
+              children: actions,
+              mainAxisSize: MainAxisSize.min,
+            ),
+          ) as PreferredSizeWidget
+        : AppBar(
+            actions: actions,
+            title: Text(
+              'Despesas Pessoais',
+              style: TextStyle(
+                  fontSize: 20 * MediaQuery.of(context).textScaleFactor),
+            ),
+          );
     final availabeHeight = MediaQuery.of(context).size.height -
         appbar.preferredSize.height -
         MediaQuery.of(context).padding.top;
 
-    return Scaffold(
-      appBar: appbar,
-      // ignore: avoid_unnecessary_containers
-      body: Container(
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              if (_showChart || !isLandscape)
-                Container(
-                  height: availabeHeight * (isLandscape ? 0.7 : 0.3),
-                  child: Chart(recentTransaction: _recentTransactions),
+    final bodyPage = SafeArea(
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (_showChart || !isLandscape)
+              Container(
+                height: availabeHeight * (isLandscape ? 0.7 : 0.3),
+                child: Chart(recentTransaction: _recentTransactions),
+              ),
+            if (!_showChart || !isLandscape)
+              Container(
+                height: availabeHeight * (isLandscape ? 1 : 0.8),
+                child: TransactionList(
+                  transactions: _transactions,
+                  onRemove: _removeTransaction,
                 ),
-              if (!_showChart || !isLandscape)
-                Container(
-                  height: availabeHeight * (isLandscape ? 1 : 0.8),
-                  child: TransactionList(
-                    transactions: _transactions,
-                    onRemove: _removeTransaction,
-                  ),
-                )
-            ],
-          ),
+              )
+          ],
         ),
       ),
-
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _openTransactionFormModal(context),
-        child: Icon(Icons.add),
-      ),
-      floatingActionButtonLocation:
-          Platform.isIOS ? null : FloatingActionButtonLocation.centerFloat,
     );
+
+    return Platform.isIOS
+        ? CupertinoPageScaffold(
+            child: bodyPage,
+            navigationBar: appbar as ObstructingPreferredSizeWidget,
+          )
+        : Scaffold(
+            appBar: appbar,
+            // ignore: avoid_unnecessary_containers
+            body: Container(child: bodyPage),
+
+            floatingActionButton: Platform.isIOS
+                ? null
+                : FloatingActionButton(
+                    onPressed: () => _openTransactionFormModal(context),
+                    child: Icon(Icons.add),
+                  ),
+            floatingActionButtonLocation:
+                FloatingActionButtonLocation.centerFloat,
+          );
   }
 }
