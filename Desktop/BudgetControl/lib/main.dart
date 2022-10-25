@@ -36,7 +36,7 @@ class BudgetControlApp extends StatelessWidget {
 }
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key});
+  MyHomePage({super.key});
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
@@ -116,8 +116,8 @@ class _MyHomePageState extends State<MyHomePage> {
         ? CupertinoNavigationBar(
             middle: Text('Despesas Pessoais'),
             trailing: Row(
-              mainAxisSize: MainAxisSize.min,
               children: actions,
+              mainAxisSize: MainAxisSize.min,
             ),
           ) as PreferredSizeWidget
         : AppBar(
@@ -157,8 +157,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
     return Platform.isIOS
         ? CupertinoPageScaffold(
-            navigationBar: appbar as ObstructingPreferredSizeWidget,
             child: bodyPage,
+            navigationBar: appbar as ObstructingPreferredSizeWidget,
           )
         : Scaffold(
             appBar: appbar,
