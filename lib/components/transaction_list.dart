@@ -22,14 +22,14 @@ class TransactionList extends StatelessWidget {
                     height: 20,
                   ),
                   Text(
-                    'Nenhuma transação cadastrada use o "+"',
+                    'Nenhuma transação cadastrada ainda',
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                   SizedBox(height: 20),
                   Container(
                     height: constraints.maxHeight * 0.6,
                     child: Image.asset(
-                      'assets/images/espera.png',
+                      'assets/images/eispera.png',
                       fit: BoxFit.cover,
                     ),
                   ),
